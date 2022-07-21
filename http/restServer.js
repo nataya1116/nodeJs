@@ -23,7 +23,7 @@ http.createServer(async (req, res)=>{
                 const data = await fs.readFile(`.${req.url}`);
                 return res.end(data);
             } catch (err) {
-
+                console.error(err);
             }
         } else if (req.method === 'POST') {
             if (req.url === '/user') {
@@ -62,7 +62,7 @@ http.createServer(async (req, res)=>{
             }
         }
 
-        // // 주소가 /도 /about도 아니면
+        // 주소가 /도 /about도 아니면
         // try{
         //     const data = await fs.readFile(`.${req.url}`);
         //     return res.end(data);

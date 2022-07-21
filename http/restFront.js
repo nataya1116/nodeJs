@@ -7,9 +7,8 @@ async function getUser() {
         list.innerHTML = '';
         console.log(users);
         // 사용자마다 반복적으로 화면 표시 및 이벤트 연결
-        Object.keys(users).map(function (key, value){
+        Object.keys(users).map(function (key){
             console.log(`key : ${key}`);
-            console.log(`value : ${value}`)
             const userDiv = document.createElement('div');
             const span = document.createElement('span');
             span.textContent = users[key];
