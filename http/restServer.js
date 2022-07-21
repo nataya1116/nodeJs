@@ -8,16 +8,16 @@ http.createServer(async (req, res)=>{
         console.log(req.method, req.url);
         if(req.method === 'GET'){
             if(req.url === '/'){
-                const data = await fs.readFile('./http/restFront.html');
+                const data = await fs.readFile('./restFront.html');
                 res.writeHead(200, {'Content-Type' : 'text/html; charset=utf-8'});
                 return res.end(data);
             }else if(req.url === '/about'){
-                const data = await fs.readFile('./http/about.html');
+                const data = await fs.readFile('./about.html');
                 res.writeHead(200, {'Content-Type' : 'text/html; charset=utf-8'});
                 return res.end(data);
             }else if(req.url === '/users'){
                 res.writeHead(200, {'Content-Type' : 'text/plain; charset=utf-8'});
-                if(!users) res.writeHead(JSON.stringify(users));
+                return res.end(JSON.stringify(users));
             }
             try {
                 const data = await fs.readFile(`.${req.url}`);
@@ -55,7 +55,7 @@ http.createServer(async (req, res)=>{
                 });
             }
         } else if (req.method === 'DELETE') {
-            if (req.startsWith('/user/')) {
+            if (req.url.startsWith('/user/')) {
                 const key = req.url.split('/')[2];
                 delete users[key];
                 return res.end(JSON.stringify(users));
