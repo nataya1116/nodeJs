@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List</title>
+</head>
+<body>
+    <table style="width: 100%;">
+        <a href="/insert">추가 페이지</a>
+        <tr>
+            <td>삭제</td>
+            <td>수정</td>
+            <td>아이디</td>
+            <td>이름</td>
+            <td>전화번호</td>
+            <td>시리즈</td>
+        </tr>
+        <% data.forEach((el, index)=>{%>
+        <tr>
+            <td> <button onclick="prodDelete(<%= el.id %>)">삭제</button> </td>
+            <td> <button onclick="prodUpdate(<%= el.id %>)">수정</button> </td>
+            <td><%= el.id %></td>
+            <td><%= el.name %></td>
+            <td><%= el.number %></td>
+            <td><%= el.series %></td>
+        </tr>
+        <%}); %>
+    </table>
+</body>
+<script>
+    function prodDelete(id){
+        const form = document.createElement("form");
+        form.method = "post";
+        form.action = "/delete";
+        const inputId = document.createElement("input");
+        inputId.type = "hidden";
+        inputId.name = "id";
+        inputId.value = id;
+        form.appendChild(inputId);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function prodUpdate(id) {
+        console.log();
+    }
+</script>
+</html>
