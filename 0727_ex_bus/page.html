@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>버스 예매</title>
+    <style>
+        #_tap {
+            display: flex;
+            flex-direction: row;
+        }
+
+        h2 {
+            padding: 20px;
+        }
+
+        h4 {
+            margin: 0;
+            padding: 0;
+        }
+        #_tap>div {
+            width: 100px;
+            height: 30px;
+            border: 1px solid gray;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .choice {
+            background-color: lightgray;
+        }
+
+        #_container {
+            width: 420px;
+            height: 169px;
+            border-radius: 3px;
+            border: 1px solid gray;
+            padding: 10px 10px 10px 20px;
+
+            display: flex;
+            flex-direction: row;
+        }
+
+        .line {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #_driver {
+            margin-right: 10px;
+            border: 1px solid gray;
+        }
+
+        .seat {
+            margin: 2px;
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .disable {
+            background-color: red;
+        }
+
+        .enable {
+            background-color: gray;
+        }
+
+        .enable:hover {
+            background-color: rgb(175, 174, 174);
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+</head>
+<body>
+
+    <h2>버스 예매</h2>
+
+    <div>
+        <div id="_tap">
+            <div><h4 id="_hour1" data-hour="1">1시</h4></div>
+            <div><h4 id="_hour2" data-hour="2">2시</h4></div>
+            <div><h4 id="_hour3" data-hour="3">3시</h4></div>
+        </div>
+        <div id="_container">
+            <div id="_front">
+                <div id="_driver" class="seat"></div>
+            </div>
+            <div id="_seats"></div>
+        </div>
+    </div>
+</body>
+<script>
+
+    /*
+        1. 버스나 비행기 좌석
+        2. 좌석에 번호 붙이기
+        3. 시간별로 3개(1시, 2시, 3시) 예약 가능하도록 만들기
+    */
+
+    const taps = {
+        hour1 : _hour1,
+        hour2 : _hour2,
+        hour3 : _hour3
+    }
+
+    const socket = io.connect();
+
+    socket.on("reserve", (data) => {
+        let $target = $(`div[data-x=${data.x}][data-y=${data.y}]`);
+
+        // $target.querySelector(this).classList.removeClass() 와 동일
+        $target.removeClass("enable");
+        // $target.querySelector(this).classList.addClass() 와 동일
+        $target.addClass("disable");
+    })
+
+    $(window).ready(function(){
+        // 처음에는 기본으로 1시거를 선택
+        _hour1.parentElement.classList.add("choice");
+
+        for(let i = 1; i <= Object.keys(taps).length; i++){
+            taps["hour"+i].onclick = onClickTap;
+        }
+        
+        importData(1);
+        
+    });
+
+    function onClickTap(event){
+        removeTapsClass();
+
+        const tapDiv = event.target;
+        const hour = tapDiv.dataset.hour;
+
+        tapDiv.parentElement.classList.add("choice");
+        importData(hour);
+    }
+
+    function importData(hour){
+        $.getJSON(`/seats/${hour}`, {dummy : new Date().getTime() }, (data) => {
+            drawSeats(data);
+        });
+    }
+
+    function drawSeats(data){
+        _seats.innerHTML = "";
+        
+        data.arr.map((line, indexY) => {
+            const lineDiv = document.createElement("div");
+            lineDiv.classList.add("line");
+            _seats.appendChild(lineDiv);
+
+            line.map((item, indexX) => {
+                const seatDiv = document.createElement("div");
+                seatDiv.classList.add("seat");
+                seatDiv.innerHTML = item.num;
+                seatDiv.dataset.x = indexX;
+                seatDiv.dataset.y = indexY;
+                seatDiv.dataset.hour = data.hour;
+
+                if(item.state == 1){
+                    // 비어있는 좌석
+                    // $output.addClass('enable').click(function(){})
+                    // on() 제이쿼리 이벤트 함수
+                    seatDiv.classList.add("enable");
+                    seatDiv.onclick = onClickSeat;
+                }else if(item.state == 2){
+                    // 예약이 되어 있는 좌석
+                    // 비활성화를 의미하는 클래스 추가
+                    seatDiv.classList.add("disable");
+                }
+                
+                lineDiv.appendChild(seatDiv);
+            })
+        })
+    }
+
+    function removeTapsClass(){
+        document.querySelectorAll("#_tap>div").forEach((item, index) => {
+            item.classList.remove("choice");
+        })
+    }
+
+    function onClickSeat(event) {
+
+        const seat = event.target;
+        if(seat.classList.contains("disable")) return;
+
+        const x = seat.dataset.x;
+        const y = seat.dataset.y;
+        const hour = seat.dataset.hour;
+
+        if(confirm("이 좌석을 예매하시니요?")){
+            //  yes를 눌렀을 때
+            socket.emit("reserve", { x, y, hour });
+        }else{
+            alert("예매를 취소하였습니다.");
+        }
+    }
+
+    
+</script>
+</html>

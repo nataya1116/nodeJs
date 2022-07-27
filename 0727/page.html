@@ -41,8 +41,9 @@
 
     // ajax 사용(제이쿼리)
     socket.on("reserve", (data) => {
-        let $target = $(`div[data-x=${data.x}][data-y=${data.y}]`);
+        const $target = $(`div[data-x=${data.x}][data-y=${data.y}][data-hour=${data.hour}`);
 
+        console.log($target);
         // $target.querySelector(this).classList.removeClass() 와 동일
         $target.removeClass("enable");
         // $target.querySelector(this).classList.addClass() 와 동일
