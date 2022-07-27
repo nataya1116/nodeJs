@@ -7,15 +7,17 @@
     <title>Document</title>
 </head>
 <body>
-    <form method="post" action="<%=action%>">
-        <input type="hidden" name="id" value="<%= prod.id %>">
+    <form method="post" action="/update">
+        <label for="">id</label>
+        <input type="text" value="<%= prod.id %>" disabled>
+        <input type="hidden" name="id" value="<%= prod.id %>" >
         <label for="name">이름</label>
         <input type="text" name="name" value="<%= prod.name %>">
         <label for="number">전화번호</label>
         <input type="text" name="number" value="<%= prod.number %>">
         <label for="series">시리즈</label>
         <input type="text" name="series" value="<%= prod.series %>">
-        <button type="submit"><%= btnKind %></button>
+        <button type="submit">수정</button>
     </form>
 </body>
 </html>

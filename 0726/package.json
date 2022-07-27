@@ -1,0 +1,22 @@
+{
+
+  "scripts": {
+
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app2.js",
+    "dev": "nodemon app2.js"
+
+  },
+
+  "dependencies": {
+    "express": "^4.18.1",
+    "fs": "^0.0.1-security",
+    "socket.io": "^4.5.1"
+  },
+
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+
+}
+

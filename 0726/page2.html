@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div>버디버디</div>
+    <div>모두 채팅</div>
+    <input type="text" id="user_name">
+    <input type="text" id="message">
+    <button id="btn">메세지 전송</button>
+    <ul id="content"></ul>
+</body>
+<script>
+    window.onload = () => {
+        const socket = io.connect();
+
+        // 클라이언트 이벤트 연결
+        socket.on("message", (data) => {
+            const el = `
+            <li>
+                <h4>${data.name}</h4>
+                <p>${data.message}</p>
+                <p>${data.date}</p>
+            </li>
+            `;
+            content.innerHTML += el;
+        })
+        btn.onclick = () => {
+            socket.emit('message', {
+                name : user_name.value,
+                message : message.value,
+                date : new Date().toUTCString()
+            });
+        };
+    };
+</script>
+</html>

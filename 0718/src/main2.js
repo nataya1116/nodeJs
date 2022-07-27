@@ -8,11 +8,13 @@ const mysql = require("mysql2");
 // body-parser는 요청과 응답 사이에서 공통적인 기능을 해주는 미들웨어이다. html 데이터를 body라는 객체 안에 담아서 요청 응답을 받을 수 있게 해준다. node.js 기본 내장 모듈이다. form 태그의 input name 요소가 키 value가 값이다.
 const bodyParser = require("body-parser");
 
-console.log(ejs);
+// console.log(ejs);
 const conn = mysql.createConnection({
   user: "root",
   password: "1234",
   database: "test5",
+  // 다중 쿼리문을 사용할 수 있는 옵션 true, false
+  multipleStatements: true,
 });
 
 // express 함수를 실행해서 반환 값을 담아줌
@@ -40,9 +42,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/list", (req, res) => {
-  console.log(req);
-
-  // fs 모듈로 파일을 읽어 온다. 첫번째 매개변수는 경로 이름
+  // console.log(req);
+  // fs 모듈로 파일을 읽어 온다. 첫번째 매개변수는 경로 이름 콜백의 두번째 인자인 data는 html
   fs.readFile("src/list.html", "utf-8", (err, data) => {
     conn.query("select * from products", (_err, result) => {
       if (_err) {
@@ -50,10 +51,11 @@ app.get("/list", (req, res) => {
           "CREATE TABLE products(id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), number VARCHAR(20), series VARCHAR(20))";
         conn.query(sql);
         console.log(_err);
+        0;
       } else {
         console.log(result);
         // render()함수로 불러온 파일을 그려준다.
-        const render = ejs.render(data, { data: result });
+        const render = ejs.render(data, { prods: result });
         res.send(render);
       }
     });
@@ -62,7 +64,12 @@ app.get("/list", (req, res) => {
 
 app.get("/insert", (req, res) => {
   fs.readFile("src/insert.html", "utf-8", (err, data) => {
-    res.send(data);
+    const render = ejs.render(data, {
+      action: "/insert",
+      prod: {},
+      btnKind: "추가",
+    });
+    res.send(render);
   });
 });
 
@@ -79,16 +86,95 @@ app.post("/insert", (req, res) => {
   });
 });
 
-app.post("/delete", (req, res) => {
-  const data = req.body;
-  console.log(data);
-  const sql = "DELETE FROM products WHERE id = ?;";
-  conn.query(sql, [data.id], (err, result) => {
+// app.post("/edit", (req, res) => {
+//   const data = req.body;
+//   console.log(data);
+//   fs.readFile("src/insert.html", "utf-8", (err, file) => {
+//     const sql = "SELECT * FROM products WHERE id = ?";
+//     // query 리턴 값은 값이 1개이든 1개 이상이든 상관없이 무조건 배열로 돌려준다
+//     conn.query(sql, [data.id], (_err, result) => {
+//       if (_err) console.error(_err);
+
+//       if (result) {
+//         console.log(result);
+//         const render = ejs.render(file, {
+//           action: "/update",
+//           prod: result[0],
+//           btnKind: "수정",
+//         });
+//         res.send(render);
+//       }
+//     });
+//   });
+// });
+app.get("/edit/:id", (req, res) => {
+  fs.readFile("src/edit.html", "utf-8", (err, file) => {
+    const sql = "SELECT * FROM products WHERE id = ?";
+    conn.query(sql, [req.params.id], (err, result) => {
+      const render = ejs.render(file, { prod: result[0] });
+      res.send(render);
+    });
+  });
+});
+
+app.post("/update", (req, res) => {
+  const { id, name, number, series } = req.body;
+  const sql =
+    "UPDATE products SET name = ?, number = ?, series = ? WHERE id = ?";
+  conn.query(sql, [name, number, series, id], (err, result) => {
     if (err) console.log(err);
     // redirect 페이지 이동
     else if (result) {
       res.redirect("/list");
     }
+  });
+});
+
+// app.post("/delete", (req, res) => {
+//   const data = req.body;
+//   console.log(data);
+//   const sql = "DELETE FROM products WHERE id = ?;";
+//   conn.query(sql, [data.id], (err, result) => {
+//     if (err) console.log(err);
+//     // redirect 페이지 이동
+//     else if (result) {
+//       res.redirect("/list");
+//     }
+//   });
+// });
+
+app.get("/delete/:id", (req, res) => {
+  // url 요청 리퀘스트(req)에서 파라미터를 뽑을 수 있다.
+  // http:localhost:4000/delete/1
+  // id는 키 1은 값
+  // params에는 {id:1}이 들어 있다.
+
+  // 삭제
+  const deleteSql = "DELETE FROM products WHERE id = ?;";
+
+  //  기존 id 정렬 업데이트
+  const resetSql1 = "SET @CNT = 0;";
+  const resetSql2 = "UPDATE products SET products.id = @CNT:=@CNT+1;";
+
+  // AUTO_INCREMENT 값 초기화
+  const alterSql = "ALTER TABLE products AUTO_INCREMENT = 0;";
+
+  conn.query(deleteSql, [req.params.id], () => {
+    // UPDATE는 데이터 관련 명령어 ALTER는 데이터 정의 명령어(관계, 구조를 수정)
+    conn.query(resetSql1 + resetSql2 + alterSql, () => {
+      res.redirect("/list");
+    });
+  });
+});
+
+app.get("/test", (req, res) => {
+  // 다중쿼리 옵션인 상태에서 테이블 2개를 동시에 부르면 배열에 테이블을 부른 순서대로 저장된다.
+  const sql = "SELECT * FROM products;";
+  const sql2 = "SELECT * FROM products2;";
+  conn.query(sql + sql2, (err, result) => {
+    console.log(result);
+    // console.log(result[0]);
+    // console.log(result[1]);
   });
 });
 

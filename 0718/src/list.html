@@ -17,10 +17,12 @@
             <td>전화번호</td>
             <td>시리즈</td>
         </tr>
-        <% data.forEach((el, index)=>{%>
+        <% prods.forEach((el, index)=>{%>
         <tr>
-            <td> <button onclick="prodDelete(<%= el.id %>)">삭제</button> </td>
-            <td> <button onclick="prodUpdate(<%= el.id %>)">수정</button> </td>
+            <!-- <td> <button onclick="prodDelete(<%= el.id %>)">삭제</button> </td> -->
+            <td><a href="/delete/<%=el.id%>">삭제</a></td>
+            <!-- <td> <button onclick="prodUpdate(<%= el.id %>)">수정</button> </td> -->
+            <td><a href="/edit/<%=el.id%>">수정</a></td>
             <td><%= el.id %></td>
             <td><%= el.name %></td>
             <td><%= el.number %></td>
@@ -44,7 +46,16 @@
     }
 
     function prodUpdate(id) {
-        console.log();
+        const form = document.createElement("form");
+        form.method = "post";
+        form.action = "/edit";
+        const inputId = document.createElement("input");
+        inputId.type = "hidden";
+        inputId.name = "id";
+        inputId.value = id;
+        form.appendChild(inputId);
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>
 </html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영화 예매</title>
+    <style>
+        .line {
+            overflow: hidden;
+        }
+
+        .seat {
+            margin: 2px;
+            float: left;
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+        }
+
+        .enable {
+            background-color: gray;
+        }
+
+        .enable:hover {
+            background-color: rgb(175, 174, 174);
+        }
+
+        .disable {
+            background-color: red;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+</head>
+<body>
+    <div>영화관</div>
+</body>
+<script>
+    const socket = io.connect();
+
+    // ajax 사용(제이쿼리)
+    socket.on("reserve", (data) => {
+        let $target = $(`div[data-x=${data.x}][data-y=${data.y}]`);
+
+        // $target.querySelector(this).classList.removeClass() 와 동일
+        $target.removeClass("enable");
+        // $target.querySelector(this).classList.addClass() 와 동일
+        $target.addClass("disable");
+    })
+
+    // 초기 좌석 생성(window.onload 와 동일)
+    $(window).ready(function(){
+        // 좌석을 클릭했을 때 함수
+        const onClickSeat = function(){
+            // 제이쿼리 객체로 만드는 이유는 제이쿼리 함수와 기능(ajax)를 사용하기 위해서이다.
+            // $(객체) $() 괄호 안에 있는 dom 객체를 제이쿼리 객체로 바꿔준다.
+            // document.querySelector(this).classList.contains() 와 동일
+            if($(this).hasClass("disable")){
+                // disable 클래스를 이미 가지고 있다면 예매가 완료되었다는 뜻으로 함수를 종료한다.
+                return;
+            }
+
+            // 좌석을 클릭하면 이벤트가 발생한 좌석의 data-x, data-y 속성을 서버로 보냄
+            // $(this).attr(`data-x`) 는 <div data-x = "1"></div> data-x="1" 값을 가져온다.
+            const x = $(this).attr(`data-x`);
+            const y = $(this).attr(`data-y`);
+
+            if(confirm("이 좌석을 예매하시니요?")){
+                //  yes를 눌렀을 때
+                socket.emit("reserve", { x, y });
+            }else{
+                alert("예매를 취소하였습니다.");
+            }
+        }
+
+        // 더미 객체 만들어서 서버에 전달하는 이유 같은 url에 연속적으로 요청이 발생되면 이전에 불러왔던 데이터를 제공할 가능성이 있다. 그래서 현재 시간을 기반으로 url을 매번 다른 형태로 전달
+        $.getJSON("/seats", {dummy : new Date().getTime() }, (data) => {
+            // 좌석 생성
+
+            // js foreach 와 동일
+            $.each(data, (indexY, line) => {
+                // 문서 객체를 생성하고 변수 line에 추가
+                
+                // const line = document.createElement('div') 
+                // line.className = "line"; 와 동일
+                const $line = $("<div></div>").addClass("line");
+
+                $.each(line, (indexX, seat) => {
+
+                    /*
+                        <div class="line">
+                            <div class="seat" data-x="indexX" data-y="indexY"></div>
+                        </div>
+                    */
+                    const $output = $("<div></div>", {
+                        class: 'seat',
+                        // data-x랑 data-y 속성을 쓴 이유는 이벤트가 실행했을 때 좌석의 위치 정보를 아릭 우해서 이다.
+                        "data-x": indexX,
+                        "data-y": indexY
+                    }).appendTo($line);
+
+                    // 좌석이 비어 있으면 enable 클래스와 click 이벤트 추가
+                    if(seat == 1){
+                        // 비어있는 좌석
+                        // $output.addClass('enable').click(function(){})
+                        // on() 제이쿼리 이벤트 함수
+                        $output.addClass('enable').on('click', onClickSeat);
+                    }else if(seat == 2){
+                        // 예약이 되어 있는 좌석
+                        // 비활성화를 의미하는 클래스 추가
+                        $output.addClass("disable");
+                    }
+                });
+
+                $line.appendTo("body");
+            })
+        })
+    });
+</script>
+</html>
