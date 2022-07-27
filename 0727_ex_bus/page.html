@@ -112,7 +112,7 @@
     const socket = io.connect();
 
     socket.on("reserve", (data) => {
-        let $target = $(`div[data-x=${data.x}][data-y=${data.y}]`);
+        let $target = $(`div[data-x=${data.x}][data-y=${data.y}][data-hour=${data.hour}]`);
 
         // $target.querySelector(this).classList.removeClass() 와 동일
         $target.removeClass("enable");
