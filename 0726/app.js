@@ -57,5 +57,6 @@ io.sockets.on("connection", (socket) => {
 
         // 비밀대화
         io.sockets.to(data.id).emit("hi", data.msg);
+        console.log(socket);
     });
 });

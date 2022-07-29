@@ -35,8 +35,6 @@
             display: flex;
         }
 
-
-        
         #_send #_msg {  
             border: 0;
             box-sizing: border-box;
@@ -56,10 +54,17 @@
             width: 10%;
         }
 
+        /* #_msg_box {
+            
+            width: 100%;
+        } */
+
         #_messages {
             list-style: none;
             margin: 0;
             padding: 0;
+            height: 415px;
+            overflow-y: auto;
         }
 
         #_messages li {
@@ -103,7 +108,9 @@
                 <option value="병아리 방">병아리 방</option>
                 <option value="개구리 방">개구리 방</option>
             </select>
-            <ul id="_messages"></ul>
+            <div id="_msg_box">
+                <ul id="_messages"></ul>
+            </div>
             <div id="_send">
                 <select id="_users">
                 </select>
@@ -125,7 +132,7 @@
 
             if(!name){
                 alert("이름을 입력하세요.");
-                name.focus();
+                _username.focus();
                 return;
             }
 
@@ -153,7 +160,10 @@
                     socket.emit("whisper", from, msg);
                 }
                 
+                _messages.scrollTop = _messages.scrollHeight+100;
+                console.log(_messages.scrollHeight);
                 _msg.value = "";
+                _msg.focus();
             }
 
             socket.on("joinRoom", (room, name) => {
@@ -180,6 +190,8 @@
                 `;
 
                 socket.emit("usersUpdate");
+
+                _msg.focus();
             });
 
             socket.on("login", (name) => {
