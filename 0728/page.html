@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채팅방</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            /* 바디 기준으로 움직임 */
+            position: relative;
+            height: 100vh;
+        }
+
+        .content {
+            position: absolute;
+            /* 무슨일이 있어도 정중앙 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* ------------------------- */
+            width: 500px;
+            height: 500px;
+            border: 1px solid;
+        }
+
+        #_send {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border: 1px solid;
+            box-sizing: border-box;
+            display: flex;
+        }
+        
+        #_send #_msg {  
+            border: 0;
+            box-sizing: border-box;
+            padding: 10px;
+            width: 90%;
+        }
+
+        #_send #_send_btn {
+            background-color: bisque;
+            border: none;
+            box-sizing: border-box;
+            padding: 10px;
+            width: 10%;
+        }
+
+        #_messages {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #_messages li {
+            padding: 5px 10px;
+        }
+
+        #_login {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            position: absolute;
+        }
+
+        .join_text {
+            background-color: gray;
+        }
+
+        .leave_text {
+            background-color: aquamarine;
+            border: 1px solid rgb(40, 114, 89);
+        }
+
+        #_main {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div>동물 카톡</div>
+        <div id="_login">
+            <p>로그인</p>
+            <input type="text" id="_username">
+            <button id="_login_btn">접속</button>
+        </div>    
+        <div id="_main">
+            <select id="_rooms">
+                <option value="병아리 방">병아리 방</option>
+                <option value="개구리 방">개구리 방</option>
+            </select>
+            <ul id="_messages"></ul>
+            <div id="_send">
+                <input type="text" id="_msg">
+                <button id="_send_btn">전송</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+
+    
+    window.onload = function(){
+        _login_btn.onclick = () => {
+            _login.style.display = "none";
+            _main.style.display = "block"
+            
+            const name = _username.value;
+            // 현재 선택되어 있는 옵션 값을 가져옴
+            console.log(_rooms.options);
+            console.log(_rooms.selectedIndex);
+            let room = _rooms.options[_rooms.selectedIndex].value;
+            // io.connect() 클라이언트 접속 함수
+            const socket = io.connect();    
+            socket.emit("joinRoom", room, name);
+
+            _rooms.onchange = function(event){
+                const el = event.target;
+                console.log(el.selectedIndex);
+                socket.emit("leaveRoom", room, name);
+                room = _rooms.options[_rooms.selectedIndex].value;
+                socket.emit("joinRoom", room, name);
+                
+            }
+
+            _send_btn.onclick = () => {
+                socket.emit("chat", room, name, _msg.value);
+                _msg.value = "";
+            }
+
+            socket.on("joinRoom", (room, name) => {
+                // 싱글쿼터나 더블쿼터는 개행문자 쓰기 불가능
+                _messages.innerHTML += `
+                <li class="join_text">
+                    ${name}님이 ${room}에 들어오셨습니다.
+                </li>
+                `;
+            });
+
+            socket.on("leaveRoom", (room, name) => {
+                _messages.innerHTML += `
+                <li class="leave_text">
+                    ${name}님이 ${room}에서 나가셨습니다.
+                </li>
+                `;
+            });
+
+            socket.on("chat", (name, msg) => {
+                _messages.innerHTML += `
+                <li>
+                    ${name} : ${msg}
+                </li>
+                `;
+            });
+        };
+    };
+</script>
+</html>

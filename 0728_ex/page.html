@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채팅방</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <style>
+        body {
+            /* 바디 기준으로 움직임 */
+            position: relative;
+            height: 100vh;
+        }
+
+        .content {
+            position: absolute;
+            /* 무슨일이 있어도 정중앙 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* ------------------------- */
+            width: 500px;
+            height: 500px;
+            border: 1px solid;
+        }
+
+        #_send {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border: 1px solid;
+            box-sizing: border-box;
+            display: flex;
+        }
+
+
+        
+        #_send #_msg {  
+            border: 0;
+            box-sizing: border-box;
+            padding: 10px;
+            width: 70%;
+        }
+
+        #_send #_users {
+            width: 20%;
+        }
+
+        #_send #_send_btn {
+            background-color: bisque;
+            border: none;
+            box-sizing: border-box;
+            padding: 10px;
+            width: 10%;
+        }
+
+        #_messages {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #_messages li {
+            padding: 5px 10px;
+        }
+
+        #_login {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            position: absolute;
+        }
+
+        .join_text {
+            background-color: gray;
+        }
+
+        .leave_text {
+            background-color: aquamarine;
+            border: 1px solid rgb(40, 114, 89);
+        }
+
+        #_main {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div><b>동물 카톡</b> &nbsp;&nbsp;<span id="_name"></span></div>
+        
+        <div id="_login">
+            <p>로그인</p>
+            <input type="text" id="_username">
+            <button id="_login_btn">접속</button>
+        </div>    
+        <div id="_main">
+            <select id="_rooms">
+                <option value="병아리 방">병아리 방</option>
+                <option value="개구리 방">개구리 방</option>
+            </select>
+            <ul id="_messages"></ul>
+            <div id="_send">
+                <select id="_users">
+                </select>
+                <input type="text" id="_msg">
+                <button id="_send_btn">전송</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+
+    const ALL = "전체";
+    window.onload = function(){
+        
+        _login_btn.onclick = () => {
+
+            const name = _username.value;
+
+            if(!name){
+                alert("이름을 입력하세요.");
+                name.focus();
+                return;
+            }
+
+            let room = _rooms.options[_rooms.selectedIndex].value;
+            const socket = io.connect();
+
+            socket.emit("joinRoom", room, name);
+
+            _rooms.onchange = function(event){
+                const el = event.target;
+                console.log(el.selectedIndex);
+                socket.emit("leaveRoom", room, name);
+                room = _rooms.options[_rooms.selectedIndex].value;
+                socket.emit("joinRoom", room, name);   
+            }
+
+            _send_btn.onclick = () => {
+                const msg = _msg.value;
+                const from = _users.options[_users.selectedIndex].value;
+                if(!msg) return;
+
+                if(from === ALL || !from){
+                    socket.emit("chat", room, name, _msg.value);
+                }else{
+                    socket.emit("whisper", from, msg);
+                }
+                
+                _msg.value = "";
+            }
+
+            socket.on("joinRoom", (room, name) => {
+
+                if(!room){
+                    alert(`${name}는 이미 사용중인 이름입니다.`);
+                    return;
+                }
+
+                _login.style.display = "none";
+                _main.style.display = "block";
+                
+                
+                // 현재 선택되어 있는 옵션 값을 가져옴
+                console.log(_rooms.options);
+                console.log(_rooms.selectedIndex);
+                
+
+                // 싱글쿼터나 더블쿼터는 개행문자 쓰기 불가능
+                _messages.innerHTML += `
+                <li class="join_text">
+                    ${name}님이 ${room}에 들어오셨습니다.
+                </li>
+                `;
+
+                socket.emit("usersUpdate");
+            });
+
+            socket.on("login", (name) => {
+                _name.innerHTML = name;
+            })
+
+            socket.on("leaveRoom", (room, name) => {
+                _messages.innerHTML += `
+                <li class="leave_text">
+                    ${name}님이 ${room}에서 나가셨습니다.
+                </li>
+                `;
+            });
+
+            socket.on("chat", (name, msg) => {
+                _messages.innerHTML += `
+                <li>
+                    ${name} : ${msg}
+                </li>
+                `;
+            });
+
+            socket.on("whisper", (msg) => {
+                alert(msg);
+            });
+
+            socket.on("usersUpdate", (users) => {
+                drawUsers(users);
+            });
+        };
+    };
+
+    function drawUsers(users) {
+        _users.innerHTML = `<option value="">${ALL}</option>`;
+        users.map(item => {
+            if(_name.innerHTML !== item.name){
+                const option = document.createElement("option");
+                option.value = item.name;
+                option.innerHTML = item.name;
+                _users.appendChild(option);
+            }
+        })
+    }
+
+</script>
+</html>

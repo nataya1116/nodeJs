@@ -114,9 +114,9 @@
     socket.on("reserve", (data) => {
         let $target = $(`div[data-x=${data.x}][data-y=${data.y}][data-hour=${data.hour}]`);
 
-        // $target.querySelector(this).classList.removeClass() 와 동일
+        // $target.classList.remove() 와 동일
         $target.removeClass("enable");
-        // $target.querySelector(this).classList.addClass() 와 동일
+        // $target.classList.add() 와 동일
         $target.addClass("disable");
     })
 
@@ -131,7 +131,6 @@
         importData(1);
         
     });
-
     function onClickTap(event){
         removeTapsClass();
 
@@ -143,11 +142,11 @@
     }
 
     function importData(hour){
-        $.getJSON(`/seats/${hour}`, {dummy : new Date().getTime() }, (data) => {
+        $.getJSON(`/seats/${hour}`, {dummy : new Date().getTime() }, (data) => { 
             drawSeats(data);
         });
     }
-
+    
     function drawSeats(data){
         _seats.innerHTML = "";
         
@@ -195,8 +194,9 @@
         const x = seat.dataset.x;
         const y = seat.dataset.y;
         const hour = seat.dataset.hour;
+        const num = seat.innerHTML;
 
-        if(confirm("이 좌석을 예매하시니요?")){
+        if(confirm(`${num}번 좌석을 예매하시니요?`)){
             //  yes를 눌렀을 때
             socket.emit("reserve", { x, y, hour });
         }else{

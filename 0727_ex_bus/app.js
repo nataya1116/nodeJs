@@ -15,12 +15,6 @@ const exSeats =
     [1,1,1,1,1,1,1,1,1,1,1]
 ];
 
-const HOUR = {
-    ONE : 1,
-    TWO : 2,
-    THREE : 3
-}
-
 const hour = "hour";
 
 const busSeat = {
@@ -29,27 +23,31 @@ const busSeat = {
     hour3 : {hour : 3, arr : []}
 }
 
-let seatNum = 1;
-exSeats.map((line) => {
-    const tmpArr1 = [];
-    const tmpArr2 = [];
-    const tmpArr3 = [];
-    line.map((item) => {
+// let seatNum = 1;
+// exSeats.map((line) => {
+//     const tmpArr1 = [];
+//     const tmpArr2 = [];
+//     const tmpArr3 = [];
+//     line.map((item) => {
 
-        const tmpSeatNum = item != 0 ? seatNum : null;
+//         const tmpSeatNum = item != 0 ? seatNum : null;
 
-        tmpArr1.push({ num : tmpSeatNum, state : item});
-        tmpArr2.push({ num : tmpSeatNum, state : item});
-        tmpArr3.push({ num : tmpSeatNum, state : item});
+//         tmpArr1.push({ num : tmpSeatNum, state : item});
+//         tmpArr2.push({ num : tmpSeatNum, state : item});
+//         tmpArr3.push({ num : tmpSeatNum, state : item});
 
-        if(item) seatNum++;
-        
-    });
+//         if(item) seatNum++;
+//     });
 
-    busSeat.hour1.arr.push(tmpArr1);
-    busSeat.hour2.arr.push(tmpArr2);
-    busSeat.hour3.arr.push(tmpArr3);
-});
+//     busSeat.hour1.arr.push(tmpArr1);
+//     busSeat.hour2.arr.push(tmpArr2);
+//     busSeat.hour3.arr.push(tmpArr3);
+// });
+
+busSeat.hour1.arr = creatSeats(exSeats);
+busSeat.hour2.arr = creatSeats(exSeats);
+busSeat.hour3.arr = creatSeats(exSeats);
+console.log(busSeat);
 
 const PORT = 4000
 const server = app.listen(PORT, () => {
@@ -73,8 +71,24 @@ app.get("/seats/:hour", (req, res) => {
 io.sockets.on("connection", (socket) => {
     socket.on("reserve", (data) => {
         busSeat[hour+data.hour].arr[data.y][data.x].state = 2;
-        console.log(busSeat[hour+data.hour].arr[data.y][data.x].state);
         io.sockets.emit("reserve", data);
     });
 });
 
+function creatSeats(seatsArr) {
+    const tmpArr = [[],[],[],[],[]];
+    let num = 1;
+    for (let xi = 0; xi < seatsArr[0].length; xi++) {
+        for(let yi = 0; yi < seatsArr.length; yi++){
+
+            const el = seatsArr[yi][xi];
+            const tmpSeatNum = el != 0 ? num : null;
+            
+            tmpArr[yi][xi] = { num : tmpSeatNum, state : el}
+
+            if(el) num++;
+            
+        }
+    }
+    return tmpArr;
+}
