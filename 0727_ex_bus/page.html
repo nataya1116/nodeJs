@@ -12,7 +12,7 @@
         }
 
         h2 {
-            padding: 20px;
+            padding: 20px 20px 5px 20px;
         }
 
         h4 {
@@ -80,7 +80,9 @@
 <body>
 
     <h2>버스 예매</h2>
-
+    <span id="_nick"><%=nick%></span>님 반갑습니다.
+    <br>
+    <br>
     <div>
         <div id="_tap">
             <div><h4 id="_hour1" data-hour="1">1시</h4></div>
@@ -114,11 +116,25 @@
     socket.on("reserve", (data) => {
         let $target = $(`div[data-x=${data.x}][data-y=${data.y}][data-hour=${data.hour}]`);
 
+        // 닉네임 삽입해줌
+        $target.attr('data-nick', data.nick);
+        
         // $target.classList.remove() 와 동일
         $target.removeClass("enable");
         // $target.classList.add() 와 동일
         $target.addClass("disable");
-    })
+    });
+
+    socket.on("cancle", (data) => {
+        let $target = $(`div[data-x=${data.x}][data-y=${data.y}][data-hour=${data.hour}]`);
+
+        $target.attr('data-nick', null);
+
+        // $target.classList.remove() 와 동일
+        $target.removeClass("disable");
+        // $target.classList.add() 와 동일
+        $target.addClass("enable");
+    });
 
     $(window).ready(function(){
         // 처음에는 기본으로 1시거를 선택
@@ -127,7 +143,7 @@
         for(let i = 1; i <= Object.keys(taps).length; i++){
             taps["hour"+i].onclick = onClickTap;
         }
-        
+
         importData(1);
         
     });
@@ -162,13 +178,15 @@
                 seatDiv.dataset.x = indexX;
                 seatDiv.dataset.y = indexY;
                 seatDiv.dataset.hour = data.hour;
+                seatDiv.dataset.nick = item.nick;
+
+                seatDiv.onclick = onClickSeat;
 
                 if(item.state == 1){
                     // 비어있는 좌석
                     // $output.addClass('enable').click(function(){})
                     // on() 제이쿼리 이벤트 함수
                     seatDiv.classList.add("enable");
-                    seatDiv.onclick = onClickSeat;
                 }else if(item.state == 2){
                     // 예약이 되어 있는 좌석
                     // 비활성화를 의미하는 클래스 추가
@@ -183,24 +201,47 @@
     function removeTapsClass(){
         document.querySelectorAll("#_tap>div").forEach((item, index) => {
             item.classList.remove("choice");
-        })
+        });
     }
 
     function onClickSeat(event) {
 
         const seat = event.target;
-        if(seat.classList.contains("disable")) return;
 
         const x = seat.dataset.x;
         const y = seat.dataset.y;
         const hour = seat.dataset.hour;
         const num = seat.innerHTML;
+        const seatNick = seat.dataset.nick;
+        const nick = _nick.innerHTML;
 
+        console.log(`${nick} ${seatNick}`);
+        if(seat.classList.contains("disable")) {
+            
+            if(nick == seatNick){
+                cancle(num, { x, y, hour });
+            }
+            return;
+        }
+
+        reserve(num, { x, y, hour, nick });
+    }
+
+    function reserve(num, { x, y, hour, nick }) {
         if(confirm(`${num}번 좌석을 예매하시니요?`)){
             //  yes를 눌렀을 때
-            socket.emit("reserve", { x, y, hour });
+            socket.emit("reserve", { x, y, hour, nick });
         }else{
-            alert("예매를 취소하였습니다.");
+            alert("취소하였습니다.");
+        }
+    }
+
+    function cancle(num, { x, y, hour }) {
+        if(confirm(`${num}번 좌석의 예매를 취소하시겠습니까?`)){
+            //  yes를 눌렀을 때
+            socket.emit("cancle", { x, y, hour });
+        }else{
+            alert("취소하였습니다.");
         }
     }
 

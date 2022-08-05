@@ -51,7 +51,6 @@ app.get("/list", (req, res) => {
           "CREATE TABLE products(id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), number VARCHAR(20), series VARCHAR(20))";
         conn.query(sql);
         console.log(_err);
-        0;
       } else {
         console.log(result);
         // render()함수로 불러온 파일을 그려준다.

@@ -4,6 +4,10 @@ const fs = require("fs");
 
 const socketIo = require("socket.io");
 
+const bodyParser = require("body-parser");
+
+const ejs = require("ejs");
+
 const app = express();
 
 const exSeats = 
@@ -56,10 +60,30 @@ const server = app.listen(PORT, () => {
 
 const io = socketIo(server);
 
+app.use(
+    bodyParser.urlencoded({
+      extended: false,
+    })
+);
+
 app.get("/", (req, res) => {
-    fs.readFile("page.html", (err, file) => {
+    fs.readFile("login.html", (err, file) => {
         // console.log(busSeat);
         res.send(file.toString());
+    })
+});
+
+app.get("/reserve", (req, res) => {
+    res.redirect("/");
+});
+
+app.post("/reserve", (req, res) => {
+    const nick = req.body.nick;
+    if(nick == "") res.redirect("/");
+    fs.readFile("page.html", "utf-8", (err, file) => {
+        // console.log(busSeat);
+        const render = ejs.render(file, { nick });
+        res.send(render);
     })
 });
 
@@ -71,8 +95,16 @@ app.get("/seats/:hour", (req, res) => {
 io.sockets.on("connection", (socket) => {
     socket.on("reserve", (data) => {
         busSeat[hour+data.hour].arr[data.y][data.x].state = 2;
+        busSeat[hour+data.hour].arr[data.y][data.x].nick = data.nick;
+        console.log(busSeat[hour+data.hour].arr[data.y][data.x]);
         io.sockets.emit("reserve", data);
     });
+    socket.on("cancle", (data) => {
+        busSeat[hour+data.hour].arr[data.y][data.x].state = 1;
+        busSeat[hour+data.hour].arr[data.y][data.x].nick = null;
+        console.log(busSeat[hour+data.hour].arr[data.y][data.x]);
+        io.sockets.emit("cancle", data);
+    })
 });
 
 function creatSeats(seatsArr) {
@@ -84,7 +116,7 @@ function creatSeats(seatsArr) {
             const el = seatsArr[yi][xi];
             const tmpSeatNum = el != 0 ? num : null;
             
-            tmpArr[yi][xi] = { num : tmpSeatNum, state : el}
+            tmpArr[yi][xi] = { num : tmpSeatNum, state : el,  nick : null};
 
             if(el) num++;
             
