@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/socket.io/socket.io.js"></script>
+
+
+</head>
+<link
+rel="stylesheet"
+href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
+/>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<body>
+    상점 페이지
+    <div class="content">
+        <ul 
+            id="listview" 
+            data-role="listview" 
+            data-inset="true" 
+            data-filter="true">
+            <li 
+                data-role="list-divider">
+                products
+            </li>
+            <% products.forEach((item) => { %>
+            <li class="product" data-index="<%=item.index%>">
+                <a href="#">
+                    <img src="/img/corn.jpg" alt="">
+                    <h3><%=item.name%></h3>
+                    <h3><%=item.price%>원</h3>
+                    <span class="ui-li-count"><%=item.count%></span>
+                </a>
+                <a href="#" data-icon="heart" data-index="<%=item.index%>" class="tq"></a>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
+<script>
+    // document의 로드가 끝났을때
+    $(document).ready(() => {
+        function changeIcon(target, from, to){
+            // alert("체크");
+            $(target).removeClass(from).addClass(to);
+        }
+
+        function changeCount(index, count){
+            // document.querySelectorAll(".product")[index].querySelector('.ui-li cons').innerHTML = count;
+            // $(`li[data-index = ${index}] .ul-li-count`).html(count);
+            // ${".product"}.eq 쿼리 셀렉트 올과 동일
+            // $(".product").eq(index).find(".ui-li-count").html(count);
+            $(".product").each((item, index) => {
+                // console.log($(".product").eq(index).find("a:last-child"));
+                
+                const aIndex = $(".product").eq(index).find(".tq").attr("data-index");
+                
+                if(index == aIndex){
+                    $(".product").eq(index).find(".tq").html(count);
+                }
+            })
+        }
+
+        // 소켓 연결 생성
+        const socket = io.connect();
+
+        // 소켓 이벤트 연결
+        socket.on("count", (data) => {
+            // console.log(`${data.index} ${data.count}`);
+            changeCount(data.index, data.count);
+        });
+
+        // console.log($(`.product >a[data-icon]`).eq(0));
+        // console.log($(`.product >a`).eq(0));
+
+        $(`.product > a[data-icon]`).click(function () {
+            const index = $(this).attr("data-index");
+            // console.log(index);
+            // const $this = $(this);
+            if($(this).attr('toggle') != "off") {
+                socket.emit("cart", parseInt(index));
+                changeIcon(this, 'ui-icon-heart', 'ui-icon-check');
+                $(this).attr("toggle", "off");
+            }else {
+                if(confirm("물건을 구매할거니?")){
+                    socket.emit('buy', parseInt(index));
+                    // 부모 태그
+                    $(this).parent().remove();
+                    $(listview).listview('refresh');
+
+                }else{
+                    socket.emit("return", parseInt(index));
+                    changeIcon(this, 'ui-icon-check', 'ui-icon-heart');
+                    $(this).attr("toggle", "on");
+                }
+            }
+            
+        })
+    })
+</script>
+</html>
