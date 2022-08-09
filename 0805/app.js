@@ -27,7 +27,7 @@ const app = express();
 // 앞의 매개변수는 뒤의 경로를 이름으로 설정한 것 "/src"가 키 뒤의 경로가 값
 // /img/image.jpg(실제 경로) -> /src/image.jpg(html 등에 표기하는 절대경로)
 // app.use("/src",express.static(__dirname+"/img"));
-// app.use(express.static(__dirname+"/img"));
+// app.use(express.static(__dirname+"/img")); img 폴더까지 절대경로 생략 가능
 app.use(express.static(__dirname));
 app.use("/css",express.static(__dirname+"/css"));
 
@@ -142,15 +142,11 @@ io.on("connection", (socket) => {
             index,
             count
         });
-
-        // console.log(products);
     });
 
     // 상품 구매 취소
     socket.on('return', (index) => {
         console.log("return");
         onReturn(index);
-
-        // console.log(products);
     });
 })

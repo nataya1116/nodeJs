@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form method="post">
+        <label for="">ID</label>
+        <input type="text" name="id" required>
+        <label for="">PW</label>
+        <input type="password" name="pw" required>
+        <button id="_login_btn" type="submit">로그인</button>
+    </form>
+
+</body>
+<script>
+    /*
+    window.onload = function () {
+        _login_btn.onclick = function() {
+
+            
+
+            if(!_id.value) {
+                alert("아이디를 입력해");
+                return;
+            }
+
+            if(!_pw.value) {
+                alert("패스워드를 입력해");
+                return;
+            }
+
+
+
+            loadJson()
+            .then((data) => {
+                const id = _id.value;
+                const pw = _pw.value;
+
+                if(isLoginSuccese(data, id, pw)){
+                    sessionStorage.setItem("id", id);
+                    location.href = `index.html`;
+                }else{
+                    alert("아이디 또는 패스워드가 맞지 않습니다.");
+                }
+            })
+            .catch((rej)=>console.log("loadJson() 함수 외부 "+rej))
+        }
+    }
+    
+
+    function loadJson(){
+        return fetch('/data.json')
+        .then(res => res.json())
+        .catch((rej)=>console.log("loadJson() 함수 내부 "+rej));
+    }
+
+    function isLoginSuccese(data = [], id, pw) {
+        return data.some((item) =>{ return  item.id == id && item.pw == pw});
+    }
+
+    */
+</script>
+</html>

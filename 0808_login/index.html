@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        article {
+            width: 100vW;
+            height: 100vH;
+             
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+        #_popup {
+            width: 200px;
+            height: 200px;
+            background-color: darkgrey;
+
+            position: absolute;
+            margin: 0 auto;
+        }
+        section {
+            width: 100%;
+            height: 100%;
+            background-color: antiquewhite;
+
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <article>
+        <section>
+            <span id="_id"><%=id%>님께서 로그인 하셨습니다.</span>
+        </section>
+        <div id="_popup">
+            <span>오늘 하루 보지 않기</span>
+            <input type="checkbox" id="_check">
+        </div>
+    </article>
+</body>
+<script src="/lib/app.js"></script>
+<script>
+    window.onload = function () {
+        // const key = "id";
+        // const id = sessionStorage.getItem(key);
+        // if(!id){
+        //     alert("로그인을 해주세요.");
+        //     location.href = "login.html";
+        // }
+
+        // _id.innerHTML = `${id}님께서 로그인 하셨습니다.`;
+
+        // const popup = "popup";
+        // const ONE_DAY = 1;
+        if(isCookie(popup)){
+            _popup.style.display = "none";
+        }
+        
+        _check.onclick = function () {
+            if(_check.checked){
+                createCookie({
+                    key : popup, 
+                    val : popup, 
+                    day : ONE_DAY});
+            }else{
+                deleteCookie(popup);
+            }
+        }
+
+        // deleteCookie(popup);
+    }
+
+</script>
+</html>

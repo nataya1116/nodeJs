@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <label for="_cookie_name">쿠키이름</label>
+    <input type="text" id="_cookie_name">
+    <label for="_cookie_value">쿠키 값</label>
+    <input type="text" id="_cookie_value">
+    <button id="_cookie_create">생성</button>
+
+    <label for="">쿠키 조회</label>
+    <input type="text" id="_cookie_select">
+    <button id="_cookie_seach">조회</button>
+    <input type="text" readonly id="_cookie">
+
+    <div id="_cookie_all_view"></div>
+    <button id="_cookie_all_search">전체 조회</button>
+
+    <input type="text" id="_active_cookie">
+    <button id="_active_btn">쿠키 확인</button>
+
+    <input type="text" id="_delete_cookie">
+    <button id="_delete_btn">쿠키 삭제</button>
+</body>
+<script src="app.js"></script>
+<script>
+    _cookie_create.onclick = () => {
+        createCookie(
+            _cookie_name.value,
+            _cookie_value.value,
+            1);
+    }
+
+    _cookie_seach.onclick = () => {
+        _cookie.value = getCookie(_cookie_select.value);
+    }
+
+    _cookie_all_search.onclick = () => {
+        _cookie_all_view.innerHTML = document.cookie;
+    }
+
+    _active_btn.onclick = () => {
+        console.log(isCookie(_active_cookie.value)); 
+    }
+
+    _delete_btn.onclick = () => {
+        deleteCookie(_delete_cookie.value);
+        console.log(_delete_cookie.value,"삭제");
+    }
+
+</script>
+</html>
