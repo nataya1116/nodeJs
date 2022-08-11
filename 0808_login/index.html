@@ -42,7 +42,7 @@
         </div>
     </article>
 </body>
-<script src="/lib/app.js"></script>
+<script src="/lib/cookie.js"></script>
 <script>
     window.onload = function () {
         // const key = "id";
@@ -54,8 +54,8 @@
 
         // _id.innerHTML = `${id}님께서 로그인 하셨습니다.`;
 
-        // const popup = "popup";
-        // const ONE_DAY = 1;
+        const popup = "popup";
+        const ONE_DAY = 1;
         if(isCookie(popup)){
             _popup.style.display = "none";
         }
