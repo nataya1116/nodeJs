@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script  src="http://code.jquery.com/jquery-latest.min.js"></script>
+</head>
+<body>
+    <h1>유저 페이지</h1>
+
+    <ul>
+    <% data.forEach((user) => { %>
+        
+        <li class="item">
+            <span class="name"><%=user.name %></span>님 <%=user.age %>살 코멘트 <%=user.msg %>
+            <input type="text" class="text"><button class="item-btn">글 등록</button>
+            <a href="">등록 글 보러가기</a>
+        </li>
+
+    <% })                       %>
+    </ul>
+</body>
+<script>
+    window.onload = function() {
+        let items = document.querySelectorAll(".item");
+        items.forEach((el) => {
+            el.querySelector('.item-btn').onclick = function () {
+                const text = el.querySelector('.text').value;
+                const name = el.querySelector('.name').innerHTML;
+                $.ajax({
+                    url : '/create_post',
+                    type : 'post',
+                    data : { name, text },
+                });
+                el.querySelector('.text').value = '';
+            }
+        })
+    }
+</script>
+</html>

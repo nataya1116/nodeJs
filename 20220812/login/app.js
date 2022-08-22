@@ -48,7 +48,7 @@ const client = mysql.createConnection({
   // 데이터 베이스 계정의 이름
   user: "root",
   // root 계정의 비밀번호
-  password: "admin1234",
+  password: "1234",
   // 연결할 데이터 베이스의 이름
   database: "test7",
   // multipleStatements 다중 쿼리문을 사용 할수 있도록 하는 옵션
@@ -118,7 +118,9 @@ app.post("/login", (req, res) => {
 
   // SELECT * FROM users = users 테이블을 찾고
   // WHERE user_id=? = users 테이블에서 user_id 값으로 검색
-  bcrypt.hash(password, 10, (err, data) => {
+
+  //          바꿀 것 , 해싱 반복 횟수, 콜백
+  bcrypt.hash(password, 10          , (err, data) => {
     console.log(data);
   });
   const sql = "SELECT * FROM users WHERE user_id=?";
@@ -129,6 +131,8 @@ app.post("/login", (req, res) => {
       // result[0]에 값이 있으면 계정이 존재한다는 뜻. 아니면 계정이 없다.
       // ?. 구문 뒤에 키값이 있는지 먼저 보고 값을 참조한다. 그래서 없으면 코드가 터지는 일(크래쉬)을 방지
       if (result[0]) {
+
+        // compare() 함수는 데이터와 해시로 변환한 데이터를 비교할 수 있다.
         bcrypt.compare(password, result[0]?.password, (err, same) => {
           if (same) {
             // 로그인 성공했으니까 토큰 발급
